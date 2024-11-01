@@ -28,13 +28,13 @@ def format_dataset(name):
     return name.replace("/", "_")
 
 
-def main(dataset_name:str, train_size: int = 1_000_000, test_size: int = 10_000, k: int = 100):
+def main(dataset_name:str, train_size: int = 1_000_000, test_size: int = 10_000, k: int = 100, column_name: str = "emb"):
     assert k < train_size, "k must be less than or equal to the number of training points"
 
-    ds = load_dataset(dataset_name, split=f"train[:{train_size}]", columns=["emb"], num_proc=16)
+    ds = load_dataset(dataset_name, split=f"train[:{train_size}]", columns=[column_name], num_proc=16)
     ds = ds.with_format("np")
     
-    X = torch.from_numpy(ds["emb"])
+    X = torch.from_numpy(ds[column_name])
 
     logger.info("Creating GPU index")
     gpu_index = faiss.GpuIndexFlatL2(faiss.StandardGpuResources(), X.shape[1]) # euclidean
