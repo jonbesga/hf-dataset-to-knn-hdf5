@@ -10,8 +10,10 @@ package-mode = false
 python = "^3.10"
 datasets = "^3.1.0"
 h5py = "^3.12.1"
-scikit-learn = "^1.5.2"
 typer = "^0.12.5"
+faiss-gpu = {url = "https://github.com/kyamagu/faiss-wheels/releases/download/v1.7.3/faiss_gpu-1.7.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"}
+numpy = "<2.0"
+torch = "^2.5.1"
 
 
 [build-system]
