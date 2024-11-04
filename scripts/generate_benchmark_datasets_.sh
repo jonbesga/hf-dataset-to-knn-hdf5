@@ -2,7 +2,12 @@
 
 set -e
 
-train_sizes=(1000000 2000000 5000000 10000000 20000000)
+train_sizes=()
+
+for i in $(seq 1 20); do
+  num=$((i * 1000000))
+  train_sizes+=("$num")
+done
 
 for size in "${train_sizes[@]}"
 do
