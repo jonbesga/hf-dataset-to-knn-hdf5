@@ -37,19 +37,32 @@ def main(dataset_name:str, train_size: int = 1_000_000, test_size: int = 10_000,
     X = torch.from_numpy(ds[column_name])
 
     logger.info("Creating GPU index")
-    gpu_index = faiss.GpuIndexFlatL2(faiss.StandardGpuResources(), X.shape[1]) # euclidean
+
+    ngpus = faiss.get_num_gpus()
+
+    if ngpus > 1:
+        logger.info("Using multiple GPUs")
+        res = [faiss.StandardGpuResources() for _ in range(ngpus)]
+
+        co = faiss.GpuMultipleClonerOptions()
+        co.shard = True
+        co.use_raft = False
+
+        index = faiss.IndexFlatL2(X.shape[1])
+        gpu_index = faiss.index_cpu_to_gpu_multiple_py(res, index, co)
+    else:
+        gpu_index = faiss.GpuIndexFlatL2(faiss.StandardGpuResources(), X.shape[1]) # euclidean
 
     logger.info("Adding vectors to GPU Index")
-    X_gpu = X.cuda()
-    gpu_index.add(X_gpu)
+    
+    gpu_index.add(X if ngpus > 1 else X.cuda())
+
+    logger.info("Vectors added. Searching...")
 
     Y = X[:test_size]
-    Y_gpu = Y.cuda()
-    
-    logger.info("Vectors added. Searching...")
     distances = torch.zeros(test_size, k, dtype=torch.float32)
     indices = torch.zeros(test_size, k, dtype=torch.int64)
-    gpu_index.search(Y_gpu, k, distances, indices)
+    gpu_index.search(Y if ngpus > 1 else Y.cuda(), k, distances, indices)
     
     with h5py.File(f"{format_dataset(dataset_name)}-{format_millions(train_size)}-{X.shape[1]}-euclidean.hdf5", 'w') as f:
         f.create_dataset("train", data=X)
