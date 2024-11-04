@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "cohere-wikipedia-preparation"
+name = "hf-dataset-to-knn-hdf5"
 version = "0.1.0"
 description = ""
 authors = ["Jon Besga <jon.besga@neo4j.com>"]
